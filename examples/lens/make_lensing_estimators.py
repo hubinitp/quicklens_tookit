@@ -93,15 +93,22 @@ for key, color in estimators:
     cl_phi_x_est_avg    = ql.util.avg()
     cl_est_x_est_avg    = ql.util.avg()
     cl_est_x_est_n0_avg = ql.util.avg()
+
  
     if (key == 'ptt'): 
     	print 'bh: in ptt ... ...'
+	bh_ptt_n0_list = [None]*nsims #bh: store the noise from simulation i 
+	bh_ptt_est_list = [None]*nsims #bh: store the estimated spectrum from simulation i 
+	
     	# average power spectrum estimates.
     	for idx, i in ql.util.enumerate_progress(np.arange(0, nsims), label="averaging cls for key=%s"%key):
+        	bh_ptt_n0_list[i] = (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) #bh: n0 noise from simulation i
         	cl_est_x_est_n0_avg.add( (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) ) #bh: sum all the spectra
-             	bh_ptt_n0 = cl_est_x_est_n0_avg.get() #bh: sum/num, get the averaged spectrum	
+             	bh_ptt_n0_avg = cl_est_x_est_n0_avg.get() #bh: sum/num, get the averaged spectrum
+	
+        	bh_ptt_est_list[i] = (qecl_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) #bh: estimated spectrum from simulation i
         	cl_est_x_est_avg.add( (qecl_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
-       		bh_ptt_est = cl_est_x_est_avg.get() 
+       		bh_ptt_est_avg = cl_est_x_est_avg.get() 
         	#cl_phi_x_est_avg.add( (qecl_kappa_cross_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
 
     '''
@@ -113,24 +120,42 @@ for key, color in estimators:
     quit()
     '''
 
+    '''
+    print bh_ptt_n0_list[1].ls
+    print bh_ptt_n0_list[13].specs['cl']
+    quit()
+    '''
+
     if (key == 'pee'): 
     	print 'bh: in pee ... ...'
+	bh_pee_n0_list = [None]*nsims #bh: store the noise from simulation i 
+	bh_pee_est_list = [None]*nsims #bh: store the estimated spectrum from simulation i 
+
     	# average power spectrum estimates.
     	for idx, i in ql.util.enumerate_progress(np.arange(0, nsims), label="averaging cls for key=%s"%key):
+        	bh_pee_n0_list[i] = (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) 
         	cl_est_x_est_n0_avg.add( (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
-        	bh_pee_n0 = cl_est_x_est_n0_avg.get()
+        	bh_pee_n0_avg = cl_est_x_est_n0_avg.get()
+
+		bh_pee_est_list[i] = (qecl_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) 
 		cl_est_x_est_avg.add( (qecl_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
-		bh_pee_est = cl_est_x_est_avg.get()
+		bh_pee_est_avg = cl_est_x_est_avg.get()
         	#cl_phi_x_est_avg.add( (qecl_kappa_cross_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
 
     if (key == 'peb'): 
     	print 'bh: in peb ... ...'
-    	# average power spectrum estimates.
+	bh_peb_n0_list = [None]*nsims #bh: store the noise from simulation i 
+	bh_peb_est_list = [None]*nsims #bh: store the estimated spectrum from simulation i 
+    	
+	# average power spectrum estimates.
     	for idx, i in ql.util.enumerate_progress(np.arange(0, nsims), label="averaging cls for key=%s"%key):
-        	cl_est_x_est_n0_avg.add( (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
-		bh_peb_n0 = cl_est_x_est_n0_avg.get()
+        	bh_peb_n0_list[i] = (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) 
+        	cl_est_x_est_n0_avg.add( (qecl_lib.get_sim_ncl_lcl(key, i) / qcr).get_ml(lbins, t=t) )	
+		bh_peb_n0_avg = cl_est_x_est_n0_avg.get()
+
+        	bh_peb_est_list[i] = (qecl_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) 
         	cl_est_x_est_avg.add( (qecl_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
-		bh_peb_est = cl_est_x_est_avg.get()
+		bh_peb_est_avg = cl_est_x_est_avg.get()
         	#cl_phi_x_est_avg.add( (qecl_kappa_cross_lib.get_sim_qcl_lcl(key, i) / qcr).get_ml(lbins, t=t) )
     
     # plot lensing spectra.
@@ -142,9 +167,12 @@ for key, color in estimators:
 
     #(clpp + cl_est_x_est_n0_avg).plot(color='k', ls=':')  # theory lensing power spectrum + semi-analytical n0 bias.
 
-np.savetxt('./n0.dat', np.c_[bh_ptt_n0.ls,bh_ptt_n0.specs['cl'].real,bh_pee_n0.specs['cl'].real,bh_peb_n0.specs['cl'].real]) #bh
-np.savetxt('./est.dat', np.c_[bh_ptt_est.ls,bh_ptt_est.specs['cl'].real,bh_pee_est.specs['cl'].real,bh_peb_est.specs['cl'].real]) #bh
+np.savetxt('./n0_avg.dat', np.c_[bh_ptt_n0_avg.ls,bh_ptt_n0_avg.specs['cl'].real,bh_pee_n0_avg.specs['cl'].real,bh_peb_n0_avg.specs['cl'].real]) #bh
+np.savetxt('./est_avg.dat', np.c_[bh_ptt_est_avg.ls,bh_ptt_est_avg.specs['cl'].real,bh_pee_est_avg.specs['cl'].real,bh_peb_est_avg.specs['cl'].real]) #bh
 
+for i in range(nsims):
+	np.savetxt('./sim_'+str(i)+'_n0.dat', np.c_[bh_ptt_n0_list[i].ls,bh_ptt_n0_list[i].specs['cl'].real,bh_pee_n0_list[i].specs['cl'].real,bh_peb_n0_list[i].specs['cl'].real]) #bh
+	np.savetxt('./sim_'+str(i)+'_est.dat', np.c_[bh_ptt_est_list[i].ls,bh_ptt_est_list[i].specs['cl'].real,bh_pee_est_list[i].specs['cl'].real,bh_peb_est_list[i].specs['cl'].real]) #bh
 
 pl.xlabel(r'$l$')
 pl.ylabel(r'$(l+\frac{1}{2})^4 C_l^{\phi\phi} / 2\pi$')
