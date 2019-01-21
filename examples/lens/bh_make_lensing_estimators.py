@@ -59,9 +59,9 @@ clpp       = ql.spec.cl2cfft(cl_unl.clpp, ql.maps.cfft(nx,dx)).get_ml(lbins, t=t
 #clpp       = ql.spec.cl2cfft(cl_unl.clpp, ql.maps.cfft(nx,dx,ny=ny,dy=dy)).get_ml(lbins, t=t) #bh
 
 # make libraries for simulated skies.
-sky_lib    = ql.sims.cmb.library_flat_lensed(pix, cl_unl, "temp/sky")
+sky_lib    = ql.sims.cmb.library_flat_lensed(pix, cl_unl, "temp2/sky")
 #bh: sky_lib store the simulated lensed cmb signal, generattor of random seeds
-obs_lib    = ql.sims.obs.library_white_noise(pix, bl, sky_lib, nlev_t=nlev_t, nlev_p=nlev_p, lib_dir="temp/obs")
+obs_lib    = ql.sims.obs.library_white_noise(pix, bl, sky_lib, nlev_t=nlev_t, nlev_p=nlev_p, lib_dir="temp2/obs")
 #bh: obs_lib stroe the beam + noise added map, generator of random seeds
 
 #print dir(sky_lib.phase)
@@ -114,7 +114,7 @@ print bh_test.obs_lib.phase.__dict__
 quit()
 '''
 
-qest_lib = ql.sims.qest.library(cl_unl, cl_len, ivf_lib, lib_dir="temp/qest", npad=npad)
+qest_lib = ql.sims.qest.library(cl_unl, cl_len, ivf_lib, lib_dir="temp2/qest", npad=npad)
 #bh: qest_lib shall hold the estimated phi map
 '''
 print dir(qest_lib)
@@ -124,9 +124,9 @@ quit()
 
 qest_lib_kappa = ql.sims.qest.library_kappa(qest_lib, sky_lib)
 
-qecl_lib = ql.sims.qecl.library(qest_lib, lib_dir="temp/qecl", mc_sims_mf=mc_sims_mf, npad=npad)
+qecl_lib = ql.sims.qecl.library(qest_lib, lib_dir="temp2/qecl", mc_sims_mf=mc_sims_mf, npad=npad)
 #bh: qecl_lib shall hold the estimated spectrum
-qecl_kappa_cross_lib = ql.sims.qecl.library(qest_lib, qeB=qest_lib_kappa, lib_dir="temp/qecl_kappa", npad=npad)
+qecl_kappa_cross_lib = ql.sims.qecl.library(qest_lib, qeB=qest_lib_kappa, lib_dir="temp2/qecl_kappa", npad=npad)
 
 # --
 # run estimators, make plots.

@@ -14,15 +14,19 @@ import pylab as pl
 import quicklens as ql
 
 # simulation parameters.
-nsims      = 25
-lmin       = 50
-lmax       = 1000
-nx         = 512 # number of pixels.
-dx         = 1./60./180.*np.pi # pixel width in radians.
+nsims      = 100
+lmin       = 10
+lmax       = 2000 #bh: alicpt ell_max = 180*60/beam
+nx         = 2048 # number of pixels. bh: alicpt fieldsq = 1000 deg2
+dx         = 2./60./180.*np.pi # pixel width in radians. bh: alicpt
 
-nlev_t     = 5.  # temperature noise level, in uK.arcmin.
-nlev_p     = 5.  # polarization noise level, in uK.arcmin.
-bl         = ql.spec.bl(1., lmax) # beam transfer function.
+nlev_t     = 9.  # temperature noise level, in uK.arcmin. bh: alicpt
+nlev_p     = 9.0*np.sqrt(2.0)  # polarization noise level, in uK.arcmin. bh: alicpt
+bl         = ql.spec.bl(12., lmax) # beam transfer function. bh: alicpt
+#returns the map-level transfer function for a symmetric Gaussian beam.
+#fwhm_arcmin      = beam full-width-at-half-maximum (fwhm) in arcmin.
+#lmax             = maximum multipole.
+
 
 pix        = ql.maps.pix(nx,dx)
 
@@ -43,7 +47,7 @@ npad       = 1
 
 # plotting parameters.
 t          = lambda l: (l+0.5)**4/(2.*np.pi) # scaling to apply to cl_phiphi when plotting.
-lbins      = np.linspace(10, lmax, 40)       # multipole bins.
+lbins      = np.linspace(10, lmax, 100)       # multipole bins.
 
 # cosmology parameters.
 cl_unl     = ql.spec.get_camb_scalcl(lmax=lmax)
@@ -167,12 +171,12 @@ for key, color in estimators:
 
     #(clpp + cl_est_x_est_n0_avg).plot(color='k', ls=':')  # theory lensing power spectrum + semi-analytical n0 bias.
 
-np.savetxt('./n0_avg.dat', np.c_[bh_ptt_n0_avg.ls,bh_ptt_n0_avg.specs['cl'].real,bh_pee_n0_avg.specs['cl'].real,bh_peb_n0_avg.specs['cl'].real]) #bh
-np.savetxt('./est_avg.dat', np.c_[bh_ptt_est_avg.ls,bh_ptt_est_avg.specs['cl'].real,bh_pee_est_avg.specs['cl'].real,bh_peb_est_avg.specs['cl'].real]) #bh
+np.savetxt('./result/alicpt_n0_avg.dat', np.c_[bh_ptt_n0_avg.ls,bh_ptt_n0_avg.specs['cl'].real,bh_pee_n0_avg.specs['cl'].real,bh_peb_n0_avg.specs['cl'].real]) #bh
+np.savetxt('./result/alicpt_est_avg.dat', np.c_[bh_ptt_est_avg.ls,bh_ptt_est_avg.specs['cl'].real,bh_pee_est_avg.specs['cl'].real,bh_peb_est_avg.specs['cl'].real]) #bh
 
 for i in range(nsims):
-	np.savetxt('./sim_'+str(i)+'_n0.dat', np.c_[bh_ptt_n0_list[i].ls,bh_ptt_n0_list[i].specs['cl'].real,bh_pee_n0_list[i].specs['cl'].real,bh_peb_n0_list[i].specs['cl'].real]) #bh
-	np.savetxt('./sim_'+str(i)+'_est.dat', np.c_[bh_ptt_est_list[i].ls,bh_ptt_est_list[i].specs['cl'].real,bh_pee_est_list[i].specs['cl'].real,bh_peb_est_list[i].specs['cl'].real]) #bh
+	np.savetxt('./result/alicpt_sim_'+str(i)+'_n0.dat', np.c_[bh_ptt_n0_list[i].ls,bh_ptt_n0_list[i].specs['cl'].real,bh_pee_n0_list[i].specs['cl'].real,bh_peb_n0_list[i].specs['cl'].real]) #bh
+	np.savetxt('./result/alicpt_sim_'+str(i)+'_est.dat', np.c_[bh_ptt_est_list[i].ls,bh_ptt_est_list[i].specs['cl'].real,bh_pee_est_list[i].specs['cl'].real,bh_peb_est_list[i].specs['cl'].real]) #bh
 
 pl.xlabel(r'$l$')
 pl.ylabel(r'$(l+\frac{1}{2})^4 C_l^{\phi\phi} / 2\pi$')

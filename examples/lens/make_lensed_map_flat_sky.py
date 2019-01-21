@@ -29,9 +29,9 @@ pix        = ql.maps.pix(nx, dx)
 bl_unl_avg = ql.util.avg()
 bl_len_avg = ql.util.avg()
 for idx, i in ql.util.enumerate_progress(np.arange(0, nsims)):
-    teb_unl  = ql.sims.tebfft(pix, cl_unl)
-    tqu_unl  = teb_unl.get_tqu()
-    teb_unl  = tqu_unl.get_teb()
+    teb_unl  = ql.sims.tebfft(pix, cl_unl) #bh: simulated tebfft map
+    tqu_unl  = teb_unl.get_tqu() #bh: simulated tqu map (pixel space)
+    teb_unl  = tqu_unl.get_teb() #bh: do not know why?
 
     phifft   = ql.sims.rfft( pix, cl_unl.clpp )
     tqu_len  = ql.lens.make_lensed_map_flat_sky( tqu_unl, phifft )

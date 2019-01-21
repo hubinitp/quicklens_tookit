@@ -17,9 +17,10 @@ lmax       = 3000 # maximum multipole for T, E, B and \phi.
 nx         = 512  # number of pixels for flat-sky calc.
 dx         = 1./60./180.*np.pi # pixel width in radians.
 
-nlev_t     = 5.   # temperature noise level, in uK.arcmin.
-nlev_p     = 5.   # polarization noise level, in uK.arcmin.
-beam_fwhm  = 1.   # Gaussian beam full-width-at-half-maximum.
+#bh: AliCPT setup
+nlev_t     = 9.   # temperature noise level, in uK.arcmin.
+nlev_p     = 9.0*np.sqrt(2)   # polarization noise level, in uK.arcmin.
+beam_fwhm  = 12.   # Gaussian beam full-width-at-half-maximum.
 
 cl_unl     = ql.spec.get_camb_scalcl(lmax=lmax) # unlensed theory spectra.
 cl_len     = ql.spec.get_camb_lensedcl(lmax=lmax) # lensed theory spectra.
@@ -79,6 +80,7 @@ nlpp_TE_flatsky, nlpp_TE_fullsky = calc_nlqq( qest_TE, cltt, slte, clee, flt, fl
 nlpp_TB_flatsky, nlpp_TB_fullsky = calc_nlqq( qest_TB, cltt, zero, clbb, flt, flb )
 nlpp_EB_flatsky, nlpp_EB_fullsky = calc_nlqq( qest_EB, clee, zero, clbb, fle, flb )
 
+
 # make plot
 ls         = np.arange(0,lmax+1)
 t          = lambda l: (l*(l+1.))**2/(2.*np.pi)  # scaling to apply to cl_phiphi when plotting.
@@ -86,30 +88,63 @@ lbins      = np.linspace(10, lmax, 100)       # multipole bins.
 
 cl_unl.plot( 'clpp', t=t, color='k' )
 ql.spec.cl2cfft(cl_unl.clpp, ql.maps.cfft(nx,dx)).get_ml(lbins, t=t).plot(color='gray', ls='--')
+#bh
+bh_clpp = ql.spec.cl2cfft(cl_unl.clpp, ql.maps.cfft(nx,dx)).get_ml(lbins, t=t)
+np.savetxt('./noise_level/bh_clpp.dat', np.c_[bh_clpp.ls,bh_clpp.specs['cl'].real])
+
+'''
+print dir(bh_clpp)
+print bh_clpp.__dict__
+raw_input()
+'''
 
 pl.plot( ls, t(ls) * nlpp_TT_fullsky, color='r', label=r'TT' )
 nlpp_TT_flatsky.get_ml(lbins, t=t).plot(color='k', ls='--')
 
+#bh
+bh_nlpp_TT_flatsky = nlpp_TT_flatsky.get_ml(lbins, t=t)
+'''
+print dir(bh_nlpp_TT_flatsky)
+print bh_nlpp_TT_flatsky.__dict__
+quit()
+'''
+
 pl.plot( ls, t(ls) * nlpp_EE_fullsky, color='g', label=r'EE' )
 nlpp_EE_flatsky.get_ml(lbins, t=t).plot(color='k', ls='--')
+#bh
+bh_nlpp_EE_flatsky = nlpp_EE_flatsky.get_ml(lbins, t=t)
 
 pl.plot( ls, t(ls) * nlpp_TE_fullsky, color='b', label=r'TE' )
 nlpp_TE_flatsky.get_ml(lbins, t=t).plot(color='k', ls='--')
+#bh
+bh_nlpp_TE_flatsky = nlpp_TE_flatsky.get_ml(lbins, t=t)
 
 pl.plot( ls, t(ls) * nlpp_TB_fullsky, color='y', label=r'TB' )
 nlpp_TB_flatsky.get_ml(lbins, t=t).plot(color='k', ls='--')
+#bh
+bh_nlpp_TB_flatsky = nlpp_TB_flatsky.get_ml(lbins, t=t)
 
 pl.plot( ls, t(ls) * nlpp_EB_fullsky, color='m', label=r'EB' )
 nlpp_EB_flatsky.get_ml(lbins, t=t).plot(color='k', ls='--', label='Flatsky')
+#bh
+bh_nlpp_EB_flatsky = nlpp_EB_flatsky.get_ml(lbins, t=t)
 
-pl.xlim(1,2048)
-pl.semilogy()
+#bh
+np.savetxt('./noise_level/bh_noise.dat', np.c_[bh_nlpp_TT_flatsky.ls,bh_nlpp_TT_flatsky.specs['cl'].real,bh_nlpp_EE_flatsky.specs['cl'].real,bh_nlpp_TE_flatsky.specs['cl'].real,bh_nlpp_TB_flatsky.specs['cl'].real,bh_nlpp_EB_flatsky.specs['cl'].real])
+
+#pl.xlim(1,2048)
+pl.xlim(1,1024) #bh
+#pl.semilogy()
+pl.loglog()
 
 pl.legend(loc='upper left', ncol=2)
 pl.setp( pl.gca().get_legend().get_frame(), visible=False)
 
 pl.xlabel(r'$L$')
 pl.ylabel(r'$[L(L+1)]^2 C_L^{\phi\phi} / 2\pi$')
+#pl.ylabel(r'$[L(L+1)] C_L^{\phi\phi} / 2\pi$')
 
 pl.ion()
 pl.show()
+
+pl.savefig('noise_level.png')
